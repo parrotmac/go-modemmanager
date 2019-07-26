@@ -38,77 +38,6 @@ func (mgr *Manager) findModemsOnBus(conn *dbus.Conn, destination string, path db
 	return managedObjectPaths, nil
 }
 
-// func getPropertyAsString(object dbus.BusObject, path string) (*string, error) {
-// 	v, err := object.GetProperty(path)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	if v.Signature() != dbus.SignatureOf(reflect.String) {
-// 		return nil, BadTypeSignatureErr
-// 	}
-// 	str, ok := v.Value().(string)
-// 	if !ok {
-// 		return nil, BadCastErr
-// 	}
-// 	return &str, err
-// }
-//
-// func getPropertyAsBool(object dbus.BusObject, path string) (*bool, error) {
-// 	v, err := object.GetProperty(path)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	if v.Signature() != dbus.SignatureOf(reflect.Bool) {
-// 		return nil, BadTypeSignatureErr
-// 	}
-// 	b, ok := v.Value().(bool)
-// 	if !ok {
-// 		return nil, BadCastErr
-// 	}
-// 	return &b, nil
-// }
-//
-// func getPropertyAsInt(object dbus.BusObject, path string) (*int, error) {
-// 	v, err := object.GetProperty(path)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	if v.Signature() != dbus.SignatureOf(types.Int) || v.Signature() != dbus.SignatureOf(types.Int64) {
-// 		return nil, errors.New("bad")
-// 	}
-// 	i, ok := v.Value().(int)
-// 	if !ok {
-// 		return nil, BadCastErr
-// 	}
-// 	return &i, err
-// }
-
-// func queryBusForBearer(conn *dbus.Conn, bearerPath dbus.ObjectPath) (Bearer, error) {
-// 	bearerObj := conn.Object(ModemManagerService, bearerPath)
-// 	bearer := Bearer{
-// 		Connected: false,
-// 		Suspended: false,
-// 		Interface: "",
-// 	}
-//
-// 	connected, err := getPropertyAsBool(bearerObj, fmt.Sprintf("%s.%s", objectPathBearer, "Connected"))
-// 	if err == nil {
-// 		bearer.Connected = *connected
-// 	}
-//
-// 	suspended, err := getPropertyAsBool(bearerObj, fmt.Sprintf("%s.%s", objectPathBearer, "Suspended"))
-// 	if err == nil {
-// 		bearer.Suspended = *suspended
-// 	}
-//
-// 	iface, err := getPropertyAsString(bearerObj, fmt.Sprintf("%s.%s", objectPathBearer, "Properties"))
-// 	if err == nil {
-// 		bearer.Interface = *iface
-// 	}
-//
-// 	return bearer, nil
-// }
-
 func (mgr *Manager) queryBusForProperties(conn *dbus.Conn, objPath dbus.ObjectPath, propertyBasePath string, dstPtr interface{}) error {
 	obj := conn.Object(ModemManagerService, objPath)
 	dst := reflect.ValueOf(dstPtr)
@@ -214,46 +143,6 @@ func (mgr *Manager) GetModemList() ([]Modem, error) {
 		modems = append(modems, *modem)
 	}
 	return modems, nil
-
-	// modemManager := conn.Object("org.freedesktop.ModemManager1", "/org/freedesktop/ModemManager1/Modem/131")
-	//
-	// variant, err := modemManager.GetProperty("org.freedesktop.ModemManager1.Modem.Model")
-	// if err != nil {
-	// 	mgr.Logger.Fatal(err)
-	// }
-	// mgr.Logger.Println("modem model:", variant.Value().(string))
-	//
-	// simVariant, err := modemManager.GetProperty("org.freedesktop.ModemManager1.Modem.Sim")
-	// if err != nil {
-	// 	mgr.Logger.Fatalln(err)
-	// }
-	//
-	// simPath := simVariant.Value().(dbus.ObjectPath)
-	// mgr.Logger.Println(simPath)
-	//
-	// simInfo := conn.Object(ModemManagerService, simPath)
-	// simOperator, err := simInfo.GetProperty("org.freedesktop.ModemManager1.Sim.OperatorName")
-	// if err != nil {
-	// 	mgr.Logger.Fatalln(err)
-	// }
-	// mgr.Logger.Println(simOperator.Value().(string))
-	//
-	// modemBearerPath := dbus.ObjectPath("/org/freedesktop/ModemManager1/Bearer/0")
-	// bearer, err := queryBusForBearer(conn, modemBearerPath)
-	// if err != nil {
-	// 	mgr.Logger.Fatalln(err)
-	// }
-	// mgr.Logger.Println(bearer)
-	//
-	// modem := &Modem{}
-	// err = mgr.queryBusForProperties(conn, modemPaths[0], "org.freedesktop.ModemManager1.Modem", modem)
-	// if err != nil {
-	// 	mgr.Logger.Fatalln(err)
-	// }
-	// mgr.Logger.Printf("%+v", modem)
-	//
-	//
-	// return nil, nil
 }
 
 func (mgr *Manager) GetBearer(path dbus.ObjectPath) (Bearer, error) {
