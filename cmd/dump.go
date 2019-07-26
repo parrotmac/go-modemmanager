@@ -28,21 +28,24 @@ func main() {
 		SystemBus: conn,
 	}
 
-	err = mgr.Scan()
-	if err != nil {
-		logger.Fatal("system_bus.scan_failure", zap.Error(err))
-	}
+	// TODO: Provide proper Scan() API to request ModemManager to rescan system for modems
 
 	/*
 		Get all modems
 	*/
-	modems, err := mgr.GetModemList()
+	modemPaths, err := mgr.GetManagedModems()
 	if err != nil {
-		logger.Fatal("modem_manager.list_failure", zap.Error(err))
+		logger.Fatal("fetch_managed_modems_failure", zap.Error(err))
 	}
-	logger.Debug("modem_listing", zap.Any("data", modems))
+	logger.Debug("modem_listing", zap.Any("data", modemPaths))
 
-	for _, m := range modems {
+	for _, modemPath := range modemPaths {
+		m, err := mgr.GetModem(modemPath)
+		if err != nil {
+			logger.Fatal("modem_manager.get_modem_failure", zap.Error(err))
+		}
+		logger.Debug("modem_info", zap.Any("data", m))
+
 		/*
 			Print info about the first Bearer, if any
 		*/

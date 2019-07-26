@@ -14,8 +14,6 @@ import (
 type Manager struct {
 	SystemBus *dbus.Conn
 	Logger    *zap.Logger
-
-	modemObjectPaths []dbus.ObjectPath
 }
 
 func (mgr *Manager) findModemsOnBus(conn *dbus.Conn, destination string, path dbus.ObjectPath) ([]dbus.ObjectPath, error) {
@@ -132,17 +130,13 @@ func (mgr *Manager) getModemSignal(conn *dbus.Conn, modemPath dbus.ObjectPath) (
 	return Signal{}, errors.New("unavailable")
 }
 
-func (mgr *Manager) GetModemList() ([]Modem, error) {
-	modems := []Modem{}
-	for _, modemPath := range mgr.modemObjectPaths {
-		modem := &Modem{}
-		err := mgr.queryBusForProperties(mgr.SystemBus, modemPath, objectPathModem, modem)
-		if err != nil {
-			return nil, err
-		}
-		modems = append(modems, *modem)
+func (mgr *Manager) GetModem(path dbus.ObjectPath) (Modem, error) {
+	m := &Modem{}
+	err := mgr.queryBusForProperties(mgr.SystemBus, path, objectPathModem, m)
+	if err != nil {
+		return Modem{}, err
 	}
-	return modems, nil
+	return *m, nil
 }
 
 func (mgr *Manager) GetBearer(path dbus.ObjectPath) (Bearer, error) {
@@ -163,14 +157,10 @@ func (mgr *Manager) GetSim(path dbus.ObjectPath) (Sim, error) {
 	return *b, nil
 }
 
-func (mgr *Manager) Scan() error {
+func (mgr *Manager) GetManagedModems() ([]dbus.ObjectPath, error) {
 	modemPaths, err := mgr.findModemsOnBus(mgr.SystemBus, ModemManagerService, PathModemManager)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	mgr.Logger.Debug("managed_objects", zap.Any("object_listing", modemPaths))
-
-	mgr.modemObjectPaths = modemPaths
-	return nil
+	return modemPaths, nil
 }
