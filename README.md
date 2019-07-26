@@ -98,6 +98,10 @@ DEBUG	cmd/dump.go:68	modem_sim_info
 }
 ```
 
+# Reference
+- [Go D-Bus API](https://github.com/godbus/dbus)
+- [ModemManager D-Bus API](https://www.freedesktop.org/software/ModemManager/api/latest/ref-dbus.html)
+
 # Contributions
 PRs and Issues (even for Q's) welcome
 
