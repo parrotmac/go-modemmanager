@@ -7,8 +7,6 @@ import (
 
 	"github.com/godbus/dbus"
 	"go.uber.org/zap"
-
-	"github.com/parrotmac/rusted/pkg/device/modem"
 )
 
 type Manager struct {
@@ -141,7 +139,7 @@ func (mgr *Manager) GetModem(path dbus.ObjectPath) (Modem, error) {
 
 func (mgr *Manager) GetBearer(path dbus.ObjectPath) (Bearer, error) {
 	b := &Bearer{}
-	err := mgr.queryBusForProperties(mgr.SystemBus, path, modem.BearerPath, b)
+	err := mgr.queryBusForProperties(mgr.SystemBus, path, objectPathBearer, b)
 	if err != nil {
 		return Bearer{}, err
 	}
@@ -150,7 +148,7 @@ func (mgr *Manager) GetBearer(path dbus.ObjectPath) (Bearer, error) {
 
 func (mgr *Manager) GetSim(path dbus.ObjectPath) (Sim, error) {
 	b := &Sim{}
-	err := mgr.queryBusForProperties(mgr.SystemBus, path, modem.SimPath, b)
+	err := mgr.queryBusForProperties(mgr.SystemBus, path, objectPathSim, b)
 	if err != nil {
 		return Sim{}, err
 	}
