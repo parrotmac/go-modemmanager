@@ -37,14 +37,14 @@ func main() {
 	if err != nil {
 		logger.Fatal("fetch_managed_modems_failure", zap.Error(err))
 	}
-	logger.Debug("modem_listing", zap.Any("data", modemPaths))
+	logger.Info("modem_listing", zap.Any("data", modemPaths))
 
 	for _, modemPath := range modemPaths {
 		m, err := mgr.GetModem(modemPath)
 		if err != nil {
 			logger.Fatal("modem_manager.get_modem_failure", zap.Error(err))
 		}
-		logger.Debug("modem_info", zap.Any("data", m))
+		logger.Info("modem_info", zap.Any("data", m))
 
 		/*
 			Print info about the first Bearer, if any
@@ -54,7 +54,7 @@ func main() {
 			if err != nil {
 				logger.Fatal("modem_manager.get_bearer_failure", zap.Error(err))
 			}
-			logger.Debug("modem_bearer_info", zap.Any("data", bearer))
+			logger.Info("modem_bearer_info", zap.Any("data", bearer))
 		}
 
 		/*
@@ -65,7 +65,13 @@ func main() {
 			if err != nil {
 				logger.Fatal("modem_manager.get_sim_failure", zap.Error(err))
 			}
-			logger.Debug("modem_sim_info", zap.Any("data", sim))
+			logger.Info("modem_sim_info", zap.Any("data", sim))
 		}
+
+		location, err := mgr.CallGetModemLocation(modemPath)
+		if err != nil {
+			logger.Fatal("modem_manager.get_location_failure", zap.Error(err))
+		}
+		logger.Info("modem_location", zap.Any("location", location))
 	}
 }
