@@ -1,9 +1,12 @@
 package modem
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"reflect"
+	"strconv"
+	"strings"
 
 	"github.com/godbus/dbus"
 	"go.uber.org/zap"
@@ -128,6 +131,14 @@ func (mgr *Manager) getModemSignal(conn *dbus.Conn, modemPath dbus.ObjectPath) (
 	return Signal{}, errors.New("unavailable")
 }
 
+func extractHexEncodedUint(encodedVal string) (string, error) {
+	val, err := strconv.ParseUint(encodedVal, 16, 32)
+	if err != nil {
+		return "", err
+	}
+	return strconv.Itoa(int(val)), nil
+}
+
 func (mgr *Manager) GetModem(path dbus.ObjectPath) (Modem, error) {
 	m := &Modem{}
 	err := mgr.queryBusForProperties(mgr.SystemBus, path, objectPathModem, m)
@@ -153,6 +164,52 @@ func (mgr *Manager) GetSim(path dbus.ObjectPath) (Sim, error) {
 		return Sim{}, err
 	}
 	return *b, nil
+}
+
+func (mgr *Manager) CallGetModemLocation(path dbus.ObjectPath) (*Location, error) {
+	// e.g. {1: '310,260,417B,1411502,0'}
+	loc := &Location{}
+
+	bus := mgr.SystemBus.Object(ModemManagerService, path)
+
+	resp := make(map[uint32]dbus.Variant)
+	err := bus.CallWithContext(context.TODO(), callModemLocationGetLocation, 0).Store(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(resp) < 1 {
+		return nil, errNoLocation
+	}
+
+	for _, v := range resp {
+		respStr := v.Value().(string)
+		locParts := strings.Split(respStr, ",")
+
+		loc.MCC = locParts[0]
+		loc.MNC = locParts[1]
+
+		lac, err := extractHexEncodedUint(locParts[2])
+		if err != nil {
+			mgr.Logger.Debug("failed to decode lac hex string", zap.Error(err))
+		}
+		loc.LAC = lac
+
+		cellId, err := extractHexEncodedUint(locParts[3])
+		if err != nil {
+			mgr.Logger.Debug("failed to decode cell id hex string", zap.Error(err))
+		}
+		loc.CID = cellId
+
+		tac, err := extractHexEncodedUint(locParts[4])
+		if err != nil {
+			mgr.Logger.Debug("failed to decode cell tac hex string", zap.Error(err))
+		}
+		loc.TAC = tac
+
+		break
+	}
+	return loc, nil
 }
 
 func (mgr *Manager) GetManagedModems() ([]dbus.ObjectPath, error) {

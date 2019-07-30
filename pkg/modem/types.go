@@ -1,6 +1,8 @@
 package modem
 
 import (
+	"fmt"
+
 	"github.com/godbus/dbus"
 	"github.com/pkg/errors"
 )
@@ -73,4 +75,17 @@ type Bearer struct {
 	Connected bool   `propertyPath:"Connected" json:"connected"`
 	Suspended bool   `propertyPath:"Suspended" json:"suspended"`
 	Interface string `propertyPath:"Interface" json:"interface"`
+}
+
+const objectPathModemLocation = "org.freedesktop.ModemManager1.Modem.Location"
+
+var callModemLocationGetLocation = fmt.Sprintf("%s.%s", objectPathModemLocation, "GetLocation")
+var errNoLocation = errors.New("no location found")
+
+type Location struct {
+	MCC string `json:"mcc"`
+	MNC string `json:"mnc"`
+	LAC string `json:"lac"`
+	CID string `json:"cid"`
+	TAC string `json:"tac"`
 }
